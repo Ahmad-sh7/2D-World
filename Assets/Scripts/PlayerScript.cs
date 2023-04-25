@@ -4,16 +4,9 @@ using UnityEngine;
 
 public class PlayerScript : MonoBehaviour
 {
-    [SerializeField] GameObject face;
-    [SerializeField] GameObject rightEye;
-    [SerializeField] GameObject leftEye;
-    [SerializeField] GameObject rightHand;
-    [SerializeField] GameObject leftHand;
-    [SerializeField] GameObject body;
-    [SerializeField] GameObject rightLeg;
-    [SerializeField] GameObject leftleg;
-    [SerializeField] GameObject player1;
-    List<GameObject> player1Objects;
+    [SerializeField] List<GameObject> players;
+    private List<GameObject> playerObjects;
+    [HideInInspector] public GameObject currentPlayer;
 
     private int currentSpeed = 5;
     private int[] speeds = { 5, 10, 20 };
@@ -21,24 +14,24 @@ public class PlayerScript : MonoBehaviour
 
     private void Awake()
     {
-        player1Objects = new List<GameObject>();
-        player1Objects.Add(face);
-        player1Objects.Add(rightEye);
-        player1Objects.Add(leftEye);
-        player1Objects.Add(rightHand);
-        player1Objects.Add(leftHand);
-        player1Objects.Add(body);
-        player1Objects.Add(rightLeg);
-        player1Objects.Add(leftleg);
+        playerObjects = new List<GameObject>();
+
+        foreach (GameObject player in players)
+        {
+            currentPlayer = player;
+            GetChildrenObjects();
+            ChangeColor();
+        }
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        // reset the position to (0,0)
-        transform.position = new Vector2(0, 0);
+        currentPlayer = players[0];
+        GetChildrenObjects();
 
-        ChangeColor();
+        // reset the position to (0,0)
+        currentPlayer.transform.position = new Vector2(0, 0);
     }
 
     // Update is called once per frame
@@ -47,41 +40,74 @@ public class PlayerScript : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F))
             ChangeColor();
 
+        ChangePlayer();
         MovePlayer();
+    }
+
+    void ChangePlayer()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1))
+            SetCurrentPlayer(0);
+
+        if (Input.GetKeyDown(KeyCode.Alpha2) || Input.GetKeyDown(KeyCode.Keypad2))
+            SetCurrentPlayer(1);
+
+        if (Input.GetKeyDown(KeyCode.Alpha3) || Input.GetKeyDown(KeyCode.Keypad3))
+            SetCurrentPlayer(2);
+
+        if (Input.GetKeyDown(KeyCode.Alpha4) || Input.GetKeyDown(KeyCode.Keypad4))
+            SetCurrentPlayer(3);
+    }
+
+    void SetCurrentPlayer(int index)
+    {
+        currentPlayer = players[index];
+        GetChildrenObjects();
     }
 
     void ChangeColor()
     {
-        foreach (GameObject gameObject in player1Objects)
-            gameObject.GetComponent<Renderer>().material.color = Random.ColorHSV();
+        foreach (GameObject playerObject in playerObjects)
+            playerObject.GetComponent<Renderer>().material.color = Random.ColorHSV();
     }
 
     void MovePlayer()
     {
         if (Input.GetKey(KeyCode.W))
-        {
-            transform.position += new Vector3(0, currentSpeed) * Time.deltaTime;
-        }
+            currentPlayer.transform.position += new Vector3(0, currentSpeed) * Time.deltaTime;
 
         if (Input.GetKey(KeyCode.S))
-        {
-            transform.position += new Vector3(0, -currentSpeed) * Time.deltaTime;
-        }
+            currentPlayer.transform.position += new Vector3(0, -currentSpeed) * Time.deltaTime;
 
         if (Input.GetKey(KeyCode.D))
-        {
-            transform.position += new Vector3(currentSpeed, 0) * Time.deltaTime;
-        }
+            currentPlayer.transform.position += new Vector3(currentSpeed, 0) * Time.deltaTime;
 
         if (Input.GetKey(KeyCode.A))
-        {
-            transform.position += new Vector3(-currentSpeed, 0) * Time.deltaTime;
-        }
+            currentPlayer.transform.position += new Vector3(-currentSpeed, 0) * Time.deltaTime;
 
         if (Input.GetKeyDown(KeyCode.RightShift) || Input.GetKeyDown(KeyCode.LeftShift))
         {
             speedIndex = (speedIndex + 1) % 3;
             currentSpeed = speeds[speedIndex];
+        }
+    }
+
+    void GetChildrenObjects()
+    {
+        playerObjects.Clear();
+
+        int childCount = currentPlayer.transform.childCount;
+        GameObject child;
+
+        for (int i = 0; i < childCount; i++)
+        {
+            child = currentPlayer.transform.GetChild(i).gameObject;
+            playerObjects.Add(child);
+
+            // Check if the childObject has children also
+            if (child.transform.childCount > 0)
+                for (int j = 0; j < child.transform.childCount; j++)
+                    playerObjects.Add(child.transform.GetChild(j).gameObject);
         }
     }
 }
