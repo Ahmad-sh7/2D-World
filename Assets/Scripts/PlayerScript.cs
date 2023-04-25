@@ -19,7 +19,6 @@ public class PlayerScript : MonoBehaviour
         foreach (GameObject player in players)
         {
             currentPlayer = player;
-            currentPlayer.transform.position = new Vector2(0, 0);
             GetChildrenObjects();
             ChangeColor();
         }
@@ -62,9 +61,14 @@ public class PlayerScript : MonoBehaviour
 
     void SetCurrentPlayer(int index)
     {
+        foreach (GameObject playerObject in playerObjects)
+            playerObject.GetComponent<Renderer>().sortingOrder = 0;
+
         currentPlayer = players[index];
         currentSpeed = 5;
         GetChildrenObjects();
+        foreach (GameObject playerObject in playerObjects)
+            playerObject.GetComponent<Renderer>().sortingOrder = 5;
     }
 
     void ChangeColor()
